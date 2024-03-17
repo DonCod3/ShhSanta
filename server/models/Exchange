@@ -1,0 +1,60 @@
+// Purpose: Define the Exchange model for the database
+const { Schema, Types, model } = require('mongoose')
+
+const exchangeSchema = new Schema({
+    exchangeName: {
+        type: String,
+        required: true,
+    },
+
+    // exchangeId: {
+    //     type: Schema.Types.ObjectId,
+    //     default: () => new Types.ObjectId()
+    // },
+
+    date: {
+        type: Date,
+        required: true
+    },
+
+    location: {
+        type: String,
+    },
+
+    description: {
+        type: String,
+    },
+
+    giftLimit: {type: Number},
+
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+
+    createdBy: {
+        type: Types.ObjectId,
+        ref: 'User'
+    },
+
+    members: [{
+        type: Types.ObjectId,
+        ref: 'User'
+    }]
+    }, {
+        toJSON: {
+            virtuals: true,
+        }
+    }
+);
+
+exchangeSchema.virtual('memberCount').get(function () {
+    return this.members.length;
+}
+);
+
+
+
+const Exchange = model('Exchange', exchangeSchema);
+
+module.exports = Exchange;

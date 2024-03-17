@@ -1,0 +1,68 @@
+const bcrypt = require('bcrypt');
+
+const { Schema, model } = require('mongoose');
+const Exchange = require('./Exchange');
+
+const userSchema = new Schema({
+    firstName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    lastName: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    phone: {
+        type: String,
+        required: true,
+        unique: true,
+        match: [/^\d{10}$/, "Please enter a valid phone number"]
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        match: [/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/, "Please enter a valid email address"]
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    exchanges: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Exchange',
+    }],
+
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    
+        // toJSON: {
+        //     getters: true,
+        // },    
+    }
+);
+
+const User = model('User', userSchema);
+
+module.exports = User;
+
+userSchema.pre('save', async function (next) {
+    if (this.isNew || this.isModified('password')) {
+        const saltRounds = 10;
+        this.password = await bcrypt.hash(this.password, saltRounds);
+    }
+    next();
+}
+);
+
+userSchema.methods.isCorrectPassword = async function (password) {
+    return bcrypt.compare(password, this.password);
+};
+
+
+
+module.exports = User;

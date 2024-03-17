@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed": "node utils/seed.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "dotenv": "^16.4.3",
     "express": "^4.18.2",
     "express-session": "^1.18.0",
-    "mongoose": "^8.1.2"
+    "mongoose": "^8.1.2",
+    "sequelize": "^6.37.1"
   }
 }
