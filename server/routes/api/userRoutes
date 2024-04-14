@@ -1,0 +1,150 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt');
+const User  = require('../../models/User');
+
+// GET all users
+router.get('/', async (req, res) => {
+    try {
+        const users = await User.find().select('-password');  
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+});
+
+// GET a single user
+router.get('/:id', (req, res) => {
+    User.findOne({
+        attributes: { exclude: ['password'] },
+        where: {
+            id: req.params.id
+        }
+    })
+        .then(dbUserData => {
+            if (!dbUserData) {
+                res.status(404).json({ message: 'No user found with this id' });
+                return;
+            }
+            res.json(dbUserData);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
+// POST a user
+router.post('/', async (req, res) => {
+    try {
+        const {firstName, lastName, email, phone, password} = req.body;
+        const newUser = await User.create({firstName, lastName, email, phone, password});
+
+        // Save session
+        req.session.save(() => {
+            req.session.userId = newUser.id;
+            req.session.email = newUser.email;
+            req.session.loggedIn = true;
+
+            // Send response
+            res.json({ user: newUser, message: 'You are now logged in!' });
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+});
+
+// POST login
+router.post('/login', async (req, res) => {
+    try {
+        console.log('Request body:', req.body); // Debug log
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        console.log('User:', user); // Debug log
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid email' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match:', 
+        isMatch, password, user.password); // Debug log
+        if (!isMatch) {
+            return res.status(400).json({ error: 'password' });
+        }
+
+        req.session.user = user;
+        res.json({ message: 'login successful' });
+    } catch (error) {
+        console.error('Error in login route:', error); // Debug log
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST logout
+router.post('/logout', (req, res) => {
+    if (req.session.loggedIn) {
+        req.session.destroy(() => {
+            res.status(204).end();
+        });
+    } else {
+        res.status(404).end();
+    }
+});
+
+// PUT a user
+router.put('/:id', (req, res) => {
+    User.update(req.body, {
+        individualHooks: true,
+        where: {
+            id: req.params.id
+        }
+    })
+        .then(dbUserData => {
+            if (!dbUserData[0]) {
+                res.status(404).json({ message: 'No user found with this id' });
+                return;
+            }
+            res.json(dbUserData);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json(err);
+        });
+});
+
+// DELETE a user
+// router.delete('/:id', (req, res) => {
+//     User.destroy({
+//         where: {
+//             id: req.params.id
+//         }
+//     })
+//         .then(dbUserData => {
+//             if (!dbUserData) {
+//                 res.status(404).json({ message: 'No user found with this id' });
+//                 return;
+//             }
+//             res.json(dbUserData);
+//         })
+//         .catch(err => {
+//             console.log(err);
+//             res.status(500).json(err);
+//         });
+// });
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'No user found with this id!' });
+        }
+        res.json({ message: 'User deleted' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+});
+
+module.exports = router;

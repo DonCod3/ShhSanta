@@ -4,11 +4,13 @@ const path = require("path");
 const apiRoutes = require("./api");
 
 // API Routes
-router.use("/api", apiRoutes);
+router.use('/api', apiRoutes);
 
-// If no API routes are hit, send the React app
-router.use((req, res) =>
-  res.sendFile(path.join(__dirname, "../client/build/index.html"))
-);
+//Static client files
+router.use(express.static(path.join(__dirname, "../../client/dist")));
+
+router.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+})
 
 module.exports = router;

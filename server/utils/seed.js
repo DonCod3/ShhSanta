@@ -1,6 +1,6 @@
 const connection = require('../config/connection');
 const { user, Exchange } = require('../models');
-const { collection } = require('../models/User');
+// const { collection } = require('../models/User');
 const { getRandomName, getRandomExchanges } = require('./data');
 
 const seedDatabase = async () => {

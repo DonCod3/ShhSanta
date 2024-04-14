@@ -46,9 +46,7 @@ const userSchema = new Schema({
     }
 );
 
-const User = model('User', userSchema);
-
-module.exports = User;
+// module.exports = User;
 
 userSchema.pre('save', async function (next) {
     if (this.isNew || this.isModified('password')) {
@@ -64,5 +62,5 @@ userSchema.methods.isCorrectPassword = async function (password) {
 };
 
 
-
+const User = model('User', userSchema);
 module.exports = User;

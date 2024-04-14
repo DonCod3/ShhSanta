@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const userRoutes = require('./userRoutes');
+// const profileRoutes = require('./profileRoutes');
 
-// const userRoutes = require('./userRoutes');
-// const eventRoutes = require('./eventRoutes');
-// const inviteRoutes = require('./inviteRoutes');
+router.use('/user', userRoutes);
+// router.use('/profile', profileRoutes);
 
-// router.use('/users', userRoutes);
-// router.use('/events', eventRoutes);
-// router.use('/invites', inviteRoutes);
 
 module.exports = router;
